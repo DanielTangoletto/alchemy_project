@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import Star from "../../../src/assets/images/icons/Star.png";
 import ThumbsUp from "../../../src/assets/images/icons/thumbs-up.png";
 import View from "../../../src/assets/images/icons/view.png";
@@ -12,9 +12,179 @@ import Writing from "../../../src/assets/images/icons/writing.png";
 import Talk from "../../../src/assets/images/icons/talk.png";
 import Simulation from "../../../src/assets/images/icons/Simulation.png";
 import CrossStar from "../../../src/assets/images/icons/CrossStar.png";
-import "./styles.css";
+// import "./styles.css";
+import data from "./data.json";
+import { useRef, useEffect, useMemo } from "react";
+import gsap from "gsap";
+
+interface Prompt {
+  id: number;
+  category: string;
+  title: string;
+  description: string;
+  likes: string;
+  views: string;
+  stars?: string;
+  icon: string;
+}
+
+interface CategoryStyles {
+  border: string;
+  text: string;
+  bg: string;
+}
+
+const CATEGORY_STYLES: Record<string, CategoryStyles> = {
+  Business: {
+    border: "border-[#BF58F166]",
+    text: "text-[#BF58F1]",
+    bg: "bg-[#BF58F11A]",
+  },
+  Students: {
+    border: "border-[#009CB8]",
+    text: "text-[#009CB8]",
+    bg: "bg-[#009CB81A]",
+  },
+  "Personal Finance": {
+    border: "border-[#00A362]",
+    text: "text-[#00A362]",
+    bg: "bg-[#00A3621A]",
+  },
+  Productivity: {
+    border: "border-[#FD3A74]",
+    text: "text-[#FD3A74]",
+    bg: "bg-[#FD3A741A]",
+  },
+  "Content Creation": {
+    border: "border-[#FFBC3F]",
+    text: "text-[#FFBC3F]",
+    bg: "bg-[#FFBC3F1A]",
+  },
+  Writing: {
+    border: "border-[#00E28E]",
+    text: "text-[#00E28E]",
+    bg: "bg-[#00E28E1A]",
+  },
+  "Talk & Transform": {
+    border: "border-[#C62E51]",
+    text: "text-[#C62E51]",
+    bg: "bg-[#C62E511A]",
+  },
+  Simulations: {
+    border: "border-[#A72AEB]",
+    text: "text-[#A72AEB]",
+    bg: "bg-[#A72AEB1A]",
+  },
+};
+
+const ICONS: Record<string, StaticImageData> = {
+  Business,
+  Student,
+  Finance,
+  Productivity,
+  ContentCrea,
+  Writing,
+  Talk,
+  Simulation,
+};
+
+const PromptCard = ({ prompt }: { prompt: Prompt }) => {
+  const styles = useMemo(
+    () => CATEGORY_STYLES[prompt.category] || CATEGORY_STYLES.Business,
+    [prompt.category]
+  );
+  const Icon = useMemo(() => ICONS[prompt.icon] || Business, [prompt.icon]);
+
+  return (
+    <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
+      <div className="flex items-center justify-between w-full h-1/3">
+        <p
+          className={`flex items-center justify-center text-[12px] text-left font-medium border ${styles.border} ${styles.text} ${styles.bg} w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1`}
+        >
+          <Image src={Icon} width={16} height={16} alt="" />
+          {prompt.category}
+        </p>
+        <div className="flex gap-2 mr-4">
+          <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
+            <Image src={Star} width={14} height={14} alt="" className="" />
+          </button>
+          <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
+            <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
+          </button>
+        </div>
+      </div>
+      <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
+      <div className="ml-3 mt-4 font-medium">
+        <h3>{prompt.title}</h3>
+        <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">{prompt.description}</p>
+      </div>
+      <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
+        {prompt.stars && (
+          <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
+            <Image src={CrossStar} width={14} height={14} alt="" className="" />
+            {prompt.stars}
+          </div>
+        )}
+        <div className="flex items-center gap-1.5 text-xs">
+          <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
+          {prompt.likes}
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
+          <Image src={View} width={14} height={14} alt="" className="" />
+          {prompt.views}
+        </div>
+      </div>
+    </article>
+  );
+};
 
 const LibraryPrompts = () => {
+  const prompts = useMemo(() => data.prompts, []);
+  const firstHalf = useMemo(() => prompts.slice(0, 8), [prompts]);
+  const secondHalf = useMemo(() => prompts.slice(8), [prompts]);
+  const scrollRightRef = useRef<HTMLDivElement>(null);
+  const scrollLeftRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!scrollRightRef.current || !scrollLeftRef.current) return;
+
+    const scrollRightContainer = scrollRightRef.current;
+    const scrollLeftContainer = scrollLeftRef.current;
+    const scrollRightContent = scrollRightContainer.querySelector(".scroll-content") as HTMLElement;
+    const scrollLeftContent = scrollLeftContainer.querySelector(".scroll-content") as HTMLElement;
+
+    if (!scrollRightContent || !scrollLeftContent) return;
+
+    const rightClone = scrollRightContent.cloneNode(true);
+    const leftClone = scrollLeftContent.cloneNode(true);
+    scrollRightContainer.appendChild(rightClone);
+    scrollLeftContainer.appendChild(leftClone);
+
+    const createScrollAnimation = (content: HTMLElement, clone: Node) => {
+      return gsap
+        .timeline({
+          repeat: -1,
+          defaults: { ease: "none" },
+        })
+        .to([content, clone], {
+          x: -content.offsetWidth,
+          duration: 60,
+          ease: "linear",
+          modifiers: {
+            x: gsap.utils.unitize((x) => parseFloat(x) % content.offsetWidth),
+          },
+        });
+    };
+
+    const tlRight = createScrollAnimation(scrollRightContent, rightClone);
+    const tlLeft = createScrollAnimation(scrollLeftContent, leftClone);
+
+    return () => {
+      tlRight.kill();
+      tlLeft.kill();
+    };
+  }, []);
+
   return (
     <>
       <section className="flex flex-col items-center justify-center">
@@ -35,1178 +205,22 @@ const LibraryPrompts = () => {
             </p>
           </div>
         </section>
-        <div className="scroll-container mt-8">
-          {/* <div className="mask-library absolute gradient-library w-270 h-105 rounded-full blur-3xl z-50 opacity-100 left-1/2 top-1/2 -translate-1/2"></div> */}
-
+        <div className="scroll-container mt-8 overflow-hidden w-full">
           {/* FIRST SECTION SCROLL RIGHT */}
-          <section className="scroll-right flex gap-2">
-            <div className="flex gap-2">
-              {/* Business */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#BF58F166] text-[#BF58F1] bg-[#BF58F11A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Business} width={16} height={16} alt="" />
-                    Business
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Business Idea Generator</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Generates unique, innovative, and market-ready business ideas, fostering
-                    entrepreneurship and promoting business growth.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                </div>
-              </article>
-
-              {/* Students */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#009CB8] text-[#009CB8] bg-[#0088A01A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Student} width={16} height={16} alt="" /> Students
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Academic Performance Predictor (CI)</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive deep into academic insights, predicting future performances and pinpointing
-                    areas for student growth.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Personal Finance*/}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#00A362] text-[#00A362] bg-[#00A3621A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Finance} width={16} height={16} alt="" />
-                    Personal Finance
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Home Ownership vs Renting Analysis</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive into an unbiased analysis of home ownership versus renting tailored to your
-                    situation.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    11K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    43K
-                  </div>
-                </div>
-              </article>
-
-              {/* Productivity */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FD3A74] text-[#FD3A74] bg-[#FD3A741A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Productivity} width={16} height={16} alt="" />
-                    Productivity
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Research Findings Summarizer</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Transform dense research into crystal-clear insights with the Research Findings
-                    Summarizer.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Students */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#009CB8] text-[#009CB8] bg-[#009CB81A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Student} width={16} height={16} alt="" />
-                    Students
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Mental Retention Strategies</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive into tailored memory techniques designed to revolutionize your retention
-                    capabilities.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Content Creation */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FFBC3F] text-[#FFBC3F] bg-[#FFBC3F1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={ContentCrea} width={16} height={16} alt="" />
-                    Content Creation
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Optimize My Ad</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Evaluates and refines advertising content to maximize effectiveness, reach, and
-                    engagement, leading to improved conversions.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    4K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    34K
-                  </div>
-                </div>
-              </article>
-
-              {/* Writing */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#00E28E] text-[#00E28E] bg-[#00E28E1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Writing} width={16} height={16} alt="" />
-                    Writing
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Detail Amplifier</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive deeper into any topic, unveiling layers of information for a richer
-                    understanding and perspective.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Talk & Transform */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#C62E51] text-[#C62E51] bg-[#C62E511A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Talk} width={16} height={16} alt="" />
-                    Talk & Transform
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Talk To A 80/20 Coach</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Engage in a dynamic conversation to master the 80/20 principle in real-world
-                    contexts.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-            </div>
-            {/* Duplication du contenu pour l'effet infini */}
-            <div className="flex gap-2">
-              {/* Business */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#BF58F166] text-[#BF58F1] bg-[#BF58F11A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Business} width={16} height={16} alt="" />
-                    Business
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Business Idea Generator</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Generates unique, innovative, and market-ready business ideas, fostering
-                    entrepreneurship and promoting business growth.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                </div>
-              </article>
-
-              {/* Students */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#009CB8] text-[#009CB8] bg-[#0088A01A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Student} width={16} height={16} alt="" /> Students
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Academic Performance Predictor (CI)</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive deep into academic insights, predicting future performances and pinpointing
-                    areas for student growth.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Personal Finance*/}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#00A362] text-[#00A362] bg-[#00A3621A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Finance} width={16} height={16} alt="" />
-                    Personal Finance
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Home Ownership vs Renting Analysis</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive into an unbiased analysis of home ownership versus renting tailored to your
-                    situation.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    11K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    43K
-                  </div>
-                </div>
-              </article>
-
-              {/* Productivity */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FD3A74] text-[#FD3A74] bg-[#FD3A741A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Productivity} width={16} height={16} alt="" />
-                    Productivity
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Research Findings Summarizer</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Transform dense research into crystal-clear insights with the Research Findings
-                    Summarizer.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Students */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#009CB8] text-[#009CB8] bg-[#009CB81A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Student} width={16} height={16} alt="" />
-                    Students
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Mental Retention Strategies</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive into tailored memory techniques designed to revolutionize your retention
-                    capabilities.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Content Creation */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FFBC3F] text-[#FFBC3F] bg-[#FFBC3F1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={ContentCrea} width={16} height={16} alt="" />
-                    Content Creation
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Optimize My Ad</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Evaluates and refines advertising content to maximize effectiveness, reach, and
-                    engagement, leading to improved conversions.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    4K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    34K
-                  </div>
-                </div>
-              </article>
-
-              {/* Writing */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#00E28E] text-[#00E28E] bg-[#00E28E1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Writing} width={16} height={16} alt="" />
-                    Writing
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Detail Amplifier</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive deeper into any topic, unveiling layers of information for a richer
-                    understanding and perspective.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Talk & Transform */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#C62E51] text-[#C62E51] bg-[#C62E511A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Talk} width={16} height={16} alt="" />
-                    Talk & Transform
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Talk To A 80/20 Coach</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Engage in a dynamic conversation to master the 80/20 principle in real-world
-                    contexts.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
+          <section ref={scrollRightRef} className="scroll-right flex gap-2 ">
+            <div className="scroll-content flex gap-2">
+              {firstHalf.map((prompt) => (
+                <PromptCard key={prompt.id} prompt={prompt} />
+              ))}
             </div>
           </section>
 
           {/* SECOND SECTION SCROLL LEFT */}
-          <section className="scroll-left flex gap-2 mt-2">
-            <div className="flex gap-2">
-              {/* Productivity */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FD3A74] text-[#FD3A74] bg-[#FD3A741A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Productivity} width={16} height={16} alt="" />
-                    Productivity
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Solution Seeker</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    The prompt seeks an unconventional solution to a specified problem, considering
-                    its context, constraints, and goals.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    431
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    9.8K
-                  </div>
-                </div>
-              </article>
-
-              {/* Writing */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#00E28E] text-[#00E28E] bg-[#00E28E1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Writing} width={16} height={16} alt="" />
-                    Writing
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Hollywood Story Craft</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Provides comprehensive assistance in creating compelling, Hollywood-syle
-                    narratives for any type of story.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    111
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    985
-                  </div>
-                </div>
-              </article>
-
-              {/* Productivity */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FD3A74] text-[#FD3A74] bg-[#FD3A741A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Productivity} width={16} height={16} alt="" />
-                    Productivity
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Compare & Contrast</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Analyzes two distinct subjects, highlighting their similarities and differences,
-                    thereby providing a comprehensive comparison.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={CrossStar} width={14} height={14} alt="" className="" />
-                    1.5K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.5K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    18.2K
-                  </div>
-                </div>
-              </article>
-
-              {/* Content Creation */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FFBC3F] text-[#FFBC3F] bg-[#FFBC3F1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={ContentCrea} width={16} height={16} alt="" />
-                    Content Creation
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Title Hook Architect</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Designs persuasive titles that pique reader interest, optimize engagement, and
-                    increase click-through rates.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.1K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    8K
-                  </div>
-                </div>
-              </article>
-
-              {/* Writing */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#00E28E] text-[#00E28E] bg-[#00E28E1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Writing} width={16} height={16} alt="" />
-                    Writing
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Character Backstory Builder</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive deep into your character&apos;s lore with intricate detailing and vivid
-                    imagination.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    11K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    43K
-                  </div>
-                </div>
-              </article>
-
-              {/* Business */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#BF58F166] text-[#BF58F1] bg-[#BF58F11A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Business} width={16} height={16} alt="" />
-                    Business
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Winning Elevator Pitch</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Crafts concise, compelling elevator pitches that effectively communicate a
-                    business idea&apos;s unique value proposition.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Students */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#009CB8] text-[#009CB8] bg-[#009CB81A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Student} width={16} height={16} alt="" />
-                    Students
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Thesis Builder</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Assists in constructing robust, research-driven thesis statements, simplifying
-                    the academic writing process.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Students */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#A72AEB] text-[#A72AEB] bg-[#A72AEB1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Simulation} width={16} height={16} alt="" />
-                    Simulations
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Quick-fit Practicer</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Enhances reaction times and quick-thinking abilities through dynamic, real-time
-                    simulations.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-            </div>
-            {/* Duplication du contenu pour l'effet infini */}
-            <div className="flex gap-2">
-              {/* Productivity */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FD3A74] text-[#FD3A74] bg-[#FD3A741A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Productivity} width={16} height={16} alt="" />
-                    Productivity
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Solution Seeker</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    The prompt seeks an unconventional solution to a specified problem, considering
-                    its context, constraints, and goals.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    431
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    9.8K
-                  </div>
-                </div>
-              </article>
-
-              {/* Writing */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#00E28E] text-[#00E28E] bg-[#00E28E1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Writing} width={16} height={16} alt="" />
-                    Writing
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Hollywood Story Craft</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Provides comprehensive assistance in creating compelling, Hollywood-syle
-                    narratives for any type of story.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    111
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    985
-                  </div>
-                </div>
-              </article>
-
-              {/* Productivity */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FD3A74] text-[#FD3A74] bg-[#FD3A741A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Productivity} width={16} height={16} alt="" />
-                    Productivity
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Compare & Contrast</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Analyzes two distinct subjects, highlighting their similarities and differences,
-                    thereby providing a comprehensive comparison.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={CrossStar} width={14} height={14} alt="" className="" />
-                    1.5K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.5K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    18.2K
-                  </div>
-                </div>
-              </article>
-
-              {/* Content Creation */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#FFBC3F] text-[#FFBC3F] bg-[#FFBC3F1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={ContentCrea} width={16} height={16} alt="" />
-                    Content Creation
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Title Hook Architect</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Designs persuasive titles that pique reader interest, optimize engagement, and
-                    increase click-through rates.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.1K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    8K
-                  </div>
-                </div>
-              </article>
-
-              {/* Writing */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#00E28E] text-[#00E28E] bg-[#00E28E1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Writing} width={16} height={16} alt="" />
-                    Writing
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Character Backstory Builder</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Dive deep into your character&apos;s lore with intricate detailing and vivid
-                    imagination.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    11K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    43K
-                  </div>
-                </div>
-              </article>
-
-              {/* Business */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#BF58F166] text-[#BF58F1] bg-[#BF58F11A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Business} width={16} height={16} alt="" />
-                    Business
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Winning Elevator Pitch</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Crafts concise, compelling elevator pitches that effectively communicate a
-                    business idea&apos;s unique value proposition.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Students */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#009CB8] text-[#009CB8] bg-[#009CB81A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Student} width={16} height={16} alt="" />
-                    Students
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Thesis Builder</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Assists in constructing robust, research-driven thesis statements, simplifying
-                    the academic writing process.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
-
-              {/* Students */}
-              <article className="flex flex-col items-center w-[556px] h-48.5 rounded-lg border-6 border-white/8 inter">
-                <div className="flex items-center justify-between w-full h-1/3">
-                  <p className="flex items-center justify-center text-[12px] text-left font-medium border border-[#A72AEB] text-[#A72AEB] bg-[#A72AEB1A] w-auto rounded-2xl py-0.5 px-2 my-1 ml-3 gap-1">
-                    <Image src={Simulation} width={16} height={16} alt="" />
-                    Simulations
-                  </p>
-                  <div className="flex gap-2 mr-4">
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={Star} width={14} height={14} alt="" className="" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-md cursor-pointer">
-                      <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    </button>
-                  </div>
-                </div>
-                <div className="h-0.25 w-95/100 bg-[#33383D]"></div>
-                <div className="ml-3 mt-4 font-medium">
-                  <h3>Quick-fit Practicer</h3>
-                  <p className="text-[#B1B4B7] text-[14px] mt-1 w-95/100">
-                    Enhances reaction times and quick-thinking abilities through dynamic, real-time
-                    simulations.
-                  </p>
-                </div>
-                <div className="flex gap-4 w-full justify-end mr-8 mt-2 text-[#B1B4B7]">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Image src={ThumbsUp} width={14} height={14} alt="" className="" />
-                    1.2K
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#B1B4B7]">
-                    <Image src={View} width={14} height={14} alt="" className="" />
-                    382
-                  </div>
-                </div>
-              </article>
+          <section ref={scrollLeftRef} className="scroll-right flex gap-2 mt-3">
+            <div className="scroll-content flex gap-2">
+              {secondHalf.map((prompt) => (
+                <PromptCard key={prompt.id} prompt={prompt} />
+              ))}
             </div>
           </section>
         </div>

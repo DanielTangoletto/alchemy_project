@@ -1,0 +1,149 @@
+{
+  "prompts": [
+    {
+      "id": 1,
+      "category": "Business",
+      "title": "Business Idea Generator",
+      "description": "Generates unique, innovative, and market-ready business ideas, fostering entrepreneurship and promoting business growth.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Business"
+    },
+    {
+      "id": 2,
+      "category": "Students",
+      "title": "Academic Performance Predictor (CI)",
+      "description": "Dive deep into academic insights, predicting future performances and pinpointing areas for student growth.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Student"
+    },
+    {
+      "id": 3,
+      "category": "Personal Finance",
+      "title": "Home Ownership vs Renting Analysis",
+      "description": "Dive into an unbiased analysis of home ownership versus renting tailored to your situation.",
+      "likes": "11K",
+      "views": "43K",
+      "icon": "Finance"
+    },
+    {
+      "id": 4,
+      "category": "Productivity",
+      "title": "Research Findings Summarizer",
+      "description": "Transform dense research into crystal-clear insights with the Research Findings Summarizer.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Productivity"
+    },
+    {
+      "id": 5,
+      "category": "Students",
+      "title": "Mental Retention Strategies",
+      "description": "Dive into tailored memory techniques designed to revolutionize your retention capabilities.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Student"
+    },
+    {
+      "id": 6,
+      "category": "Content Creation",
+      "title": "Optimize My Ad",
+      "description": "Evaluates and refines advertising content to maximize effectiveness, reach, and engagement, leading to improved conversions.",
+      "likes": "4K",
+      "views": "34K",
+      "icon": "ContentCrea"
+    },
+    {
+      "id": 7,
+      "category": "Writing",
+      "title": "Detail Amplifier",
+      "description": "Dive deeper into any topic, unveiling layers of information for a richer understanding and perspective.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Writing"
+    },
+    {
+      "id": 8,
+      "category": "Talk & Transform",
+      "title": "Talk To A 80/20 Coach",
+      "description": "Engage in a dynamic conversation to master the 80/20 principle in real-world contexts.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Talk"
+    },
+    {
+      "id": 9,
+      "category": "Productivity",
+      "title": "Solution Seeker",
+      "description": "The prompt seeks an unconventional solution to a specified problem, considering its context, constraints, and goals.",
+      "likes": "431",
+      "views": "9.8K",
+      "icon": "Productivity"
+    },
+    {
+      "id": 10,
+      "category": "Writing",
+      "title": "Hollywood Story Craft",
+      "description": "Provides comprehensive assistance in creating compelling, Hollywood-syle narratives for any type of story.",
+      "likes": "111",
+      "views": "985",
+      "icon": "Writing"
+    },
+    {
+      "id": 11,
+      "category": "Productivity",
+      "title": "Compare & Contrast",
+      "description": "Analyzes two distinct subjects, highlighting their similarities and differences, thereby providing a comprehensive comparison.",
+      "stars": "1.5K",
+      "likes": "1.5K",
+      "views": "18.2K",
+      "icon": "Productivity"
+    },
+    {
+      "id": 12,
+      "category": "Content Creation",
+      "title": "Title Hook Architect",
+      "description": "Designs persuasive titles that pique reader interest, optimize engagement, and increase click-through rates.",
+      "likes": "1.1K",
+      "views": "8K",
+      "icon": "ContentCrea"
+    },
+    {
+      "id": 13,
+      "category": "Writing",
+      "title": "Character Backstory Builder",
+      "description": "Dive deep into your character's lore with intricate detailing and vivid imagination.",
+      "likes": "11K",
+      "views": "43K",
+      "icon": "Writing"
+    },
+    {
+      "id": 14,
+      "category": "Business",
+      "title": "Winning Elevator Pitch",
+      "description": "Crafts concise, compelling elevator pitches that effectively communicate a business idea's unique value proposition.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Business"
+    },
+    {
+      "id": 15,
+      "category": "Students",
+      "title": "Thesis Builder",
+      "description": "Assists in constructing robust, research-driven thesis statements, simplifying the academic writing process.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Student"
+    },
+    {
+      "id": 16,
+      "category": "Simulations",
+      "title": "Quick-fit Practicer",
+      "description": "Enhances reaction times and quick-thinking abilities through dynamic, real-time simulations.",
+      "likes": "1.2K",
+      "views": "382",
+      "icon": "Simulation"
+    }
+  ]
+}
